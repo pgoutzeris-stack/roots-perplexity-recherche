@@ -109,10 +109,12 @@ step 3 "API-Key"
 
 if [ -f "$KEY_FILE" ]; then
   echo "  Es liegt schon ein Key in $KEY_FILE"
-  if ask "  Behalten? (Nein = neuen eintragen)"; then
-    echo "  Bestehender Key bleibt."
-  else
+  # Vorauswahl ist Behalten: ein versehentliches Enter darf keinen
+  # funktionierenden Key loeschen.
+  if ask "  Einen neuen Key eintragen und den bestehenden ersetzen?"; then
     rm -f "$KEY_FILE"
+  else
+    echo "  Bestehender Key bleibt."
   fi
 fi
 
