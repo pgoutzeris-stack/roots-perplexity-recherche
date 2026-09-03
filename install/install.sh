@@ -151,11 +151,20 @@ fi
 # ── 4 ─────────────────────────────────────────────────────────
 step 4 "Plugin registrieren"
 
-echo "  Kopiere das Paket nach $DEST"
-mkdir -p "$DEST"
-rm -rf "$DEST/.claude-plugin" "$DEST/plugins"
-cp -R "$SRC/.claude-plugin" "$SRC/plugins" "$DEST/" || die "Kopieren fehlgeschlagen"
-chmod +x "$DEST"/plugins/roots-perplexity-recherche/scripts/*.sh
+# Kommt die Einrichtung aus dem GitHub-Repo, wird der Marktplatz dort
+# registriert, dann holt Claude spaetere Versionen selbst. Bei der Zip- und
+# App-Variante liegt der Marktplatz lokal, weil kein Netz vorausgesetzt wird.
+if [ -n "${ROOTS_MARKETPLACE:-}" ]; then
+  MARKET="$ROOTS_MARKETPLACE"
+  echo "  Marktplatz: $MARKET"
+else
+  MARKET="$DEST"
+  echo "  Kopiere das Paket nach $DEST"
+  mkdir -p "$DEST"
+  rm -rf "$DEST/.claude-plugin" "$DEST/plugins"
+  cp -R "$SRC/.claude-plugin" "$SRC/plugins" "$DEST/" || die "Kopieren fehlgeschlagen"
+  chmod +x "$DEST"/plugins/roots-perplexity-recherche/scripts/*.sh
+fi
 
 is_installed() {
   python3 - <<'PY'
@@ -171,7 +180,7 @@ PY
 
 INSTALLED=no
 if [ "$HAVE_CLI" -eq 1 ]; then
-  claude plugin marketplace add "$DEST" 2>&1 | sed 's/^/    /' || true
+  claude plugin marketplace add "$MARKET" 2>&1 | sed 's/^/    /' || true
   if [ "$(is_installed)" = "yes" ]; then
     echo "    Plugin schon installiert, uebersprungen."
   else
@@ -185,7 +194,7 @@ if [ "$INSTALLED" = "yes" ]; then
 else
   echo "  Konnte nicht automatisch installiert werden."
   echo "  In Claude Code eintippen:"
-  echo "      /plugin marketplace add $DEST"
+  echo "      /plugin marketplace add $MARKET"
   echo "      /plugin install $PLUGIN_ID"
 fi
 
