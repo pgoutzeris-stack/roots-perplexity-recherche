@@ -1,0 +1,15 @@
+{
+  "name": "roots-recherche",
+  "description": "Interne Claude-Plugins von ROOTS Brand Strategy Consultants.",
+  "owner": {
+    "name": "ROOTS Brand Strategy Consultants",
+    "email": "pgoutzeris@roots-consultants.com"
+  },
+  "plugins": [
+    {
+      "name": "roots-perplexity-recherche",
+      "source": "./plugins/roots-perplexity-recherche",
+      "description": "Perplexity-Recherche entlang fester Leitplanken. Eigener API-Key pro Rechner, Bewertung und Synthese bleiben lokal."
+    }
+  ]
+}

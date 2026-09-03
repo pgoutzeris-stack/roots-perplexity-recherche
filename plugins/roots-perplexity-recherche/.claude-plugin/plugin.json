@@ -1,0 +1,16 @@
+{
+  "name": "roots-perplexity-recherche",
+  "version": "0.7.2",
+  "description": "Externe Recherche laeuft ueber die Perplexity-API entlang vorab definierter Leitplanken, Bewertung und Synthese bleiben lokal. Der API-Key liegt in einer eigenen Datei mit Rechten 600. Fehlt Node.js, wird es ohne Adminrechte nach ~/.roots/node entpackt.",
+  "author": {
+    "name": "ROOTS Brand Strategy Consultants",
+    "email": "pgoutzeris@roots-consultants.com"
+  },
+  "keywords": [
+    "recherche",
+    "perplexity",
+    "marktrecherche",
+    "quellen",
+    "wettbewerb"
+  ]
+}
