@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Perplexity-Recherche einrichten</title>
+<link rel="stylesheet" href="https://fonts.cdnfonts.com/css/circular-std">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+:root{
+  --brand:#206efb; --brand-dark:#165fd9; --brand-light:#eff6ff;
+  --ink:#0f172a; --muted:#475569;
+  --bg:#ffffff; --line:#e2e8f0;
+  --status-bg:#f8fafc; --status-border:#94a3b8; --status-text:#334155;
+  --danger:#dc2626; --danger-dark:#b91c1c;
+  --warning-bg:#fffbf0; --warning-text:#b45309;
+  --radius:16px; --radius-pill:999px;
+  --shadow:0 6px 20px rgba(15,23,42,.08);
+}
+*{box-sizing:border-box}
+body{margin:0;background:#f1f5f9;font-family:'Circular Std',system-ui,sans-serif;color:var(--ink);line-height:1.55}
+.wrapper{margin:3rem auto;padding:4rem;background:var(--bg);border-radius:var(--radius);box-shadow:var(--shadow);max-width:1000px}
+@media(max-width:760px){.wrapper{margin:0;padding:1.75rem;border-radius:0}}
+
+header{display:flex;justify-content:space-between;align-items:baseline;gap:1rem;flex-wrap:wrap;margin-bottom:.4rem}
+.brand{font-weight:700;letter-spacing:.14em;text-transform:uppercase;font-size:.82rem;color:var(--muted)}
+h1{font-size:2.1rem;line-height:1.15;margin:.2rem 0 2.2rem}
+.ver{font-size:.8rem;color:var(--muted)}
+
+.bar{height:6px;border-radius:999px;background:var(--line);overflow:hidden;margin-bottom:2.5rem}
+.bar>i{display:block;height:100%;width:0;background:var(--brand);transition:width .3s ease}
+
+.step{border:1px solid var(--line);border-radius:var(--radius);padding:1.6rem 1.75rem;margin-bottom:1.1rem;transition:all .3s ease}
+.step.active{border-color:var(--brand);box-shadow:var(--shadow)}
+.step.done{background:var(--status-bg);border-color:var(--line)}
+.step-head{display:flex;align-items:center;gap:.9rem}
+.num{flex:0 0 30px;height:30px;border-radius:999px;background:var(--brand-light);color:var(--brand-dark);
+     display:grid;place-items:center;font-size:.9rem;font-weight:700}
+.step.done .num{background:var(--brand);color:#fff}
+.step-title{font-size:1.12rem;font-weight:700;flex:1}
+.step-body{margin:1.1rem 0 0 calc(30px + .9rem)}
+.step.done .step-body{display:none}
+
+p{margin:.5rem 0}
+.muted{color:var(--muted);font-size:.94rem}
+ol.sub{margin:.6rem 0 0;padding-left:1.25rem}
+ol.sub li{margin:.45rem 0}
+.num-badge{font-variant-numeric:tabular-nums}
+
+.cmd{display:flex;align-items:stretch;gap:.6rem;margin:1rem 0 .3rem}
+.cmd code{flex:1;background:var(--status-bg);border:1px solid var(--line);border-radius:8px;
+  padding:.85rem 1rem;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.82rem;
+  overflow-x:auto;white-space:pre;color:var(--status-text)}
+.btn{border-radius:var(--radius-pill);font-family:inherit;font-size:.94rem;font-weight:500;
+  cursor:pointer;transition:all .3s ease;white-space:nowrap}
+.btn-primary{background:var(--brand);color:#fff;border:none;padding:.75rem 1.6rem;box-shadow:var(--shadow)}
+.btn-primary:hover{background:var(--brand-dark);transform:translateY(-2px)}
+.btn-secondary{background:#fff;border:1px solid var(--line);color:var(--ink);padding:.7rem 1.6rem}
+.btn-secondary:hover{border-color:var(--brand);color:var(--brand);transform:translateY(-2px)}
+.btn-copy{background:var(--brand);color:#fff;border:none;padding:0 1.3rem;min-width:9.5rem}
+.btn-copy:hover{background:var(--brand-dark)}
+.btn-copy.ok{background:var(--brand-dark)}
+.actions{display:flex;gap:.7rem;flex-wrap:wrap;margin-top:1.2rem}
+
+.block{border-radius:8px;padding:1.25rem 1.4rem;margin:1.2rem 0}
+.block-status{background:var(--status-bg);border-left:4px solid var(--status-border);color:var(--status-text)}
+.block-steps{background:var(--brand-light);border-left:4px solid var(--brand);color:var(--brand-dark)}
+.block-risk{background:var(--warning-bg);border-left:4px solid #f59e0b;color:var(--warning-text)}
+.stage-label{font-size:.85rem;text-transform:uppercase;letter-spacing:.5px;font-weight:700;
+  display:flex;align-items:center;gap:8px;margin-bottom:.5rem}
+.block p{margin:.35rem 0;font-size:.93rem}
+
+table{width:100%;border-collapse:collapse;margin:.9rem 0;font-size:.93rem}
+th,td{text-align:left;padding:.6rem .7rem;border-bottom:1px solid var(--line)}
+th{font-size:.8rem;text-transform:uppercase;letter-spacing:.4px;color:var(--muted)}
+td code{font-family:ui-monospace,Menlo,monospace;font-size:.86rem}
+
+details{margin-top:2.4rem;border-top:1px solid var(--line);padding-top:1.4rem}
+summary{cursor:pointer;font-weight:700;color:var(--muted);font-size:.95rem}
+summary:hover{color:var(--brand)}
+details[open] summary{color:var(--ink);margin-bottom:1rem}
+footer{margin-top:2.6rem;padding-top:1.4rem;border-top:1px solid var(--line);color:var(--muted);font-size:.85rem;
+  display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+a{color:var(--brand);text-decoration:none}
+a:hover{color:var(--brand-dark);text-decoration:underline}
+#warn{display:none}
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <header>
+    <span class="brand">ROOTS Brand Strategy Consultants</span>
+    <span class="ver">Plugin 0.8.0</span>
+  </header>
+  <h1>Perplexity-Recherche einrichten</h1>
+
+  <div class="bar"><i id="prog"></i></div>
+
+  <div class="block block-risk" id="warn">
+    <div class="stage-label"><i class="fa-solid fa-triangle-exclamation"></i> Anderes Betriebssystem</div>
+    <p>Die Einrichtung ist für macOS gebaut. Auf diesem Gerät laufen die Befehle nicht.</p>
+  </div>
+
+  <section class="step" id="s1">
+    <div class="step-head">
+      <span class="num num-badge">1</span>
+      <span class="step-title">Perplexity-Key anlegen</span>
+    </div>
+    <div class="step-body">
+      <p class="muted">Jede Person nutzt einen eigenen Key. Damit ist der Verbrauch pro Person sichtbar.</p>
+      <table>
+        <tr><th>Schritt</th><th>Wo</th></tr>
+        <tr><td>Anmelden</td><td>Menü <strong>API Keys</strong></td></tr>
+        <tr><td>Key erzeugen</td><td><strong>Generate</strong>, beginnt mit <code>pplx-</code>, wird nur einmal angezeigt</td></tr>
+        <tr><td>Guthaben</td><td><strong>Billing</strong> ▸ Add credits ▸ 5 Dollar</td></tr>
+        <tr><td>Limit</td><td><strong>Billing</strong> ▸ Monthly spend limit ▸ 20 Dollar</td></tr>
+      </table>
+      <div class="block block-status">
+        <p>Eine Suche kostet rund 1 Cent, eine Nachfrage wenige Cent. Ein Deep-Research-Call 50 Cent bis 2 Dollar.</p>
+      </div>
+      <div class="actions">
+        <a class="btn btn-primary" href="https://www.perplexity.ai/settings/api" target="_blank" rel="noopener">
+          <i class="fa-solid fa-arrow-up-right-from-square"></i>&nbsp; Perplexity-Konsole öffnen</a>
+        <button class="btn btn-secondary" data-done="s1">Key liegt bereit</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="step" id="s2">
+    <div class="step-head">
+      <span class="num num-badge">2</span>
+      <span class="step-title">Einrichtung starten</span>
+    </div>
+    <div class="step-body">
+      <ol class="sub">
+        <li>Terminal öffnen: <strong>Cmd + Leertaste</strong>, „Terminal", Enter</li>
+        <li>Befehl einfügen mit <strong>Cmd + V</strong>, dann Enter</li>
+        <li>Den sechs Schritten folgen, Key beim Prompt einfügen</li>
+      </ol>
+      <div class="cmd">
+        <code id="c-main">curl -fsSL https://raw.githubusercontent.com/pgoutzeris-stack/roots-perplexity-recherche/main/install/setup.sh | bash</code>
+        <button class="btn btn-copy" data-copy="c-main">Kopieren</button>
+      </div>
+      <div class="block block-steps">
+        <div class="stage-label"><i class="fa-solid fa-list-check"></i> Was dabei passiert</div>
+        <p>Voraussetzungen prüfen · fehlendes Node.js ohne Adminrechte nach <code>~/.roots/node</code> · Recherche-Server festinstallieren · Key prüfen und in <code>~/.roots/perplexity-key</code> ablegen · Plugin registrieren · Serverstart verifizieren</p>
+      </div>
+      <div class="actions"><button class="btn btn-secondary" data-done="s2">Durchgelaufen</button></div>
+    </div>
+  </section>
+
+  <section class="step" id="s3">
+    <div class="step-head">
+      <span class="num num-badge">3</span>
+      <span class="step-title">Claude neu starten</span>
+    </div>
+    <div class="step-body">
+      <p>Claude mit <strong>Cmd + Q</strong> komplett beenden und wieder öffnen. Erst danach lädt der Recherche-Server den Key.</p>
+      <div class="actions"><button class="btn btn-secondary" data-done="s3">Neu gestartet</button></div>
+    </div>
+  </section>
+
+  <section class="step" id="s4">
+    <div class="step-head">
+      <span class="num num-badge">4</span>
+      <span class="step-title">Prüfen</span>
+    </div>
+    <div class="step-body">
+      <p>In Claude eintippen:</p>
+      <div class="cmd">
+        <code id="c-status">/perplexity-status</code>
+        <button class="btn btn-copy" data-copy="c-status">Kopieren</button>
+      </div>
+      <p class="muted">Erwartet werden sechs Zeilen: Key-Datei, Plugin, Node.js, API, Serverpaket, Serverstart mit 4 Werkzeugen.</p>
+      <div class="actions"><button class="btn btn-secondary" data-done="s4">Alles grün</button></div>
+    </div>
+  </section>
+
+  <div class="block block-steps" id="fertig" style="display:none">
+    <div class="stage-label"><i class="fa-solid fa-check"></i> Fertig</div>
+    <p>Frag einfach nach externen Zahlen, Marktdaten oder Wettbewerbern. Der Skill fragt sieben Leitplanken ab und legt einen Query-Plan zur Freigabe vor, bevor Geld fließt.</p>
+  </div>
+
+  <details>
+    <summary>Wenn etwas nicht geht</summary>
+
+    <p><strong>macOS blockiert die Installer-App</strong></p>
+    <p class="muted">Unsignierte Apps aus einem Download werden gesperrt. Dieser Befehl hebt die Sperre auf und startet sie.</p>
+    <div class="cmd">
+      <code id="c-gk">A="$(find ~/Downloads ~/Desktop -maxdepth 3 -name "ROOTS Perplexity installieren.app" -print -quit 2>/dev/null)"; [ -n "$A" ] && xattr -dr com.apple.quarantine "$A" && open "$A" || echo "App nicht gefunden"</code>
+      <button class="btn btn-copy" data-copy="c-gk">Kopieren</button>
+    </div>
+
+    <p style="margin-top:1.6rem"><strong>Nur das Plugin, Key ist schon da</strong></p>
+    <div class="cmd">
+      <code id="c-plug">/plugin marketplace add pgoutzeris-stack/roots-perplexity-recherche
+/plugin install roots-perplexity-recherche@roots-recherche</code>
+      <button class="btn btn-copy" data-copy="c-plug">Kopieren</button>
+    </div>
+
+    <p style="margin-top:1.6rem"><strong>Key erneuern</strong></p>
+    <div class="cmd">
+      <code id="c-key">/perplexity-key</code>
+      <button class="btn btn-copy" data-copy="c-key">Kopieren</button>
+    </div>
+
+    <p style="margin-top:1.6rem"><strong>Wieder entfernen</strong></p>
+    <div class="cmd">
+      <code id="c-rm">rm -rf ~/.roots/perplexity-key ~/.roots/mcp ~/.roots/node</code>
+      <button class="btn btn-copy" data-copy="c-rm">Kopieren</button>
+    </div>
+
+    <table style="margin-top:1.6rem">
+      <tr><th>Meldung</th><th>Ursache</th></tr>
+      <tr><td>401 Unauthorized</td><td>Key falsch oder widerrufen</td></tr>
+      <tr><td>402 / insufficient credit</td><td>Kein Guthaben, Billing aufladen</td></tr>
+      <tr><td>Werkzeuge fehlen</td><td>Claude nicht mit Cmd+Q neu gestartet</td></tr>
+      <tr><td>Serverpaket über npx</td><td>Festinstallation fehlgeschlagen, Log <code>~/.roots/server-install.log</code></td></tr>
+    </table>
+  </details>
+
+  <footer>
+    <span>Der Key liegt in <code>~/.roots/perplexity-key</code> mit Rechten 600</span>
+    <a href="https://github.com/pgoutzeris-stack/roots-perplexity-recherche" target="_blank" rel="noopener">Quellcode</a>
+  </footer>
+</div>
+
+<script>
+(function(){
+  var steps = ['s1','s2','s3','s4'];
+  var KEY = 'roots-perplexity-setup';
+
+  function load(){
+    try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch(e){ return {}; }
+  }
+  function save(state){
+    try { localStorage.setItem(KEY, JSON.stringify(state)); } catch(e){}
+  }
+  var state = load();
+
+  function render(){
+    var open = null;
+    steps.forEach(function(id){
+      var el = document.getElementById(id);
+      var done = !!state[id];
+      el.classList.toggle('done', done);
+      el.classList.remove('active');
+      if (!done && open === null) open = id;
+    });
+    if (open) document.getElementById(open).classList.add('active');
+    var n = steps.filter(function(id){ return state[id]; }).length;
+    document.getElementById('prog').style.width = (n / steps.length * 100) + '%';
+    document.getElementById('fertig').style.display = n === steps.length ? 'block' : 'none';
+  }
+
+  document.querySelectorAll('[data-done]').forEach(function(b){
+    b.addEventListener('click', function(){
+      state[b.dataset.done] = true;
+      save(state); render();
+      var next = steps.find(function(id){ return !state[id]; });
+      if (next) document.getElementById(next).scrollIntoView({behavior:'smooth', block:'center'});
+    });
+  });
+
+  document.querySelectorAll('.step-head').forEach(function(h){
+    h.addEventListener('click', function(){
+      var el = h.parentElement;
+      if (!el.classList.contains('done')) return;
+      state[el.id] = false; save(state); render();
+    });
+  });
+
+  document.querySelectorAll('[data-copy]').forEach(function(b){
+    var label = b.textContent;
+    b.addEventListener('click', function(){
+      var text = document.getElementById(b.dataset.copy).textContent;
+      function ok(){
+        b.textContent = 'Kopiert';
+        b.classList.add('ok');
+        setTimeout(function(){ b.textContent = label; b.classList.remove('ok'); }, 1600);
+      }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(ok, fallback);
+      } else { fallback(); }
+      function fallback(){
+        var ta = document.createElement('textarea');
+        ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+        document.body.appendChild(ta); ta.select();
+        try { document.execCommand('copy'); ok(); }
+        catch(e){ b.textContent = 'Cmd+C'; setTimeout(function(){ b.textContent = label; }, 1600); }
+        document.body.removeChild(ta);
+      }
+    });
+  });
+
+  var mac = /Mac|Macintosh|Mac OS X/i.test(navigator.userAgent) || navigator.platform.indexOf('Mac') === 0;
+  if (!mac) document.getElementById('warn').style.display = 'block';
+
+  render();
+})();
+</script>
+</body>
+</html>

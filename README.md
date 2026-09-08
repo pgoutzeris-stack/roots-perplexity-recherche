@@ -6,7 +6,9 @@ Jede Person nutzt einen eigenen API-Key. Damit ist der Verbrauch pro Person sich
 
 ## Installation
 
-Ein Befehl im Terminal (Cmd+Leertaste, „Terminal", Enter):
+Die geführte Seite: **https://pgoutzeris-stack.github.io/roots-perplexity-recherche/**
+
+Oder ein Befehl im Terminal (Cmd+Leertaste, „Terminal", Enter):
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/pgoutzeris-stack/roots-perplexity-recherche/main/install/setup.sh | bash
