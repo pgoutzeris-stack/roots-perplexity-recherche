@@ -6,9 +6,15 @@ Jede Person nutzt einen eigenen API-Key. Damit ist der Verbrauch pro Person sich
 
 ## Installation
 
-Die geführte Seite: **https://pgoutzeris-stack.github.io/roots-perplexity-recherche/**
+Ein Befehl im Terminal (Cmd+Leertaste, „Terminal", Enter) holt den Installer und startet ihn:
 
-Oder ein Befehl im Terminal (Cmd+Leertaste, „Terminal", Enter):
+```bash
+curl -fsSL https://raw.githubusercontent.com/pgoutzeris-stack/roots-perplexity-recherche/main/install/app.sh | bash
+```
+
+Es erscheinen fünf Fenster mit Knöpfen, kein Terminal-Dialog. Ohne Gatekeeper-Warnung: das Kennzeichen `com.apple.quarantine` setzt nur, wer es anfordert — Browser, Mail, Slack, Teams. `curl` fordert es nicht an.
+
+### Ohne Fenster, alles im Terminal
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/pgoutzeris-stack/roots-perplexity-recherche/main/install/setup.sh | bash
