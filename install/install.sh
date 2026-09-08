@@ -73,6 +73,20 @@ fi
 
 [ -n "$MISSING" ] && die "fehlende Voraussetzungen:$MISSING"
 
+printf '  %-12s ' "server"
+SRV_SH="$SRC/plugins/roots-perplexity-recherche/scripts/ensure-server.sh"
+case "$(bash "$SRV_SH" --check 2>/dev/null)" in
+  local) echo "ok (festinstalliert)" ;;
+  *)
+    echo "wird installiert ..."
+    if bash "$SRV_SH" --install; then
+      echo "               ok, startet jetzt in etwa 0,1 s statt 0,75 s"
+    else
+      echo "               FEHLGESCHLAGEN — der Start laeuft dann ueber npx"
+      echo "               Log: ~/.roots/server-install.log"
+    fi ;;
+esac
+
 # ── 2 ─────────────────────────────────────────────────────────
 step 2 "Konflikte pruefen"
 

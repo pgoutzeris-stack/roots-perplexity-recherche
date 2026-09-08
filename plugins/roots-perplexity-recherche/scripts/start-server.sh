@@ -40,4 +40,13 @@ if ! command -v npx >/dev/null 2>&1; then
 fi
 
 export PERPLEXITY_API_KEY="$KEY"
+
+# Der festinstallierte Server startet in etwa 0,1 s. Der Weg ueber npx dauert
+# 0,75 s warm und 3,6 s mit kaltem Cache, weil das Paket jedes Mal neu
+# aufgeloest wird. Deshalb zuerst die lokale Installation.
+SRV="$(bash "$HERE/ensure-server.sh" --bin 2>/dev/null || true)"
+if [ -n "$SRV" ] && [ -x "$SRV" ]; then
+  exec "$SRV"
+fi
+
 exec npx -y @perplexity-ai/mcp-server

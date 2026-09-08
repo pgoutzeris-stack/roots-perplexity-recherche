@@ -60,13 +60,20 @@ if [ -f "$KEY_FILE" ]; then
   esac
 fi
 
+SRV_STATE="$(bash "$HERE/ensure-server.sh" --check 2>/dev/null)"
+case "$SRV_STATE" in
+  local) echo "  Serverpaket   festinstalliert in ~/.roots/mcp" ;;
+  npx)   echo "  Serverpaket   wird bei jedem Start ueber npx geladen, das kostet 0,6 s" ;;
+  *)     echo "  Serverpaket   FEHLT"; FAIL=1 ;;
+esac
+
 # Startet den Server wie Claude ihn startet und fragt seine Werkzeugliste ab.
 # Das ist der einzige Beweis, dass die ganze Kette laeuft. Kostet nichts, weil
 # tools/list die Perplexity-API nicht erreicht.
 SRV="$(bash "$HERE/verify-server.sh" --quiet 2>&1)"
 case "$SRV" in
-  OK:*) echo "  Server        laeuft, ${SRV#OK: }" ;;
-  *)    echo "  Server        ${SRV}"; FAIL=1 ;;
+  OK:*) echo "  Serverstart   ok, ${SRV#OK: }" ;;
+  *)    echo "  Serverstart   ${SRV}"; FAIL=1 ;;
 esac
 
 echo
