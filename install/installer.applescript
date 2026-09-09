@@ -75,6 +75,19 @@ on run
 		end if
 	end if
 	
+	-- Das Serverpaket einmal festinstallieren. Ohne das laeuft jeder Start
+	-- ueber npx, das das Paket neu aufloest: 0,75 s warm, 3,6 s kalt.
+	set srvSh to resDir & "plugins/roots-perplexity-recherche/scripts/ensure-server.sh"
+	if my sh("bash " & quoted form of srvSh & " --check") is not "local" then
+		activate
+		set progress total steps to 0
+		set progress description to "Recherche-Server wird eingerichtet"
+		set progress additional description to "Einmalig, danach startet er in etwa 0,1 s"
+		my runBg("bash " & quoted form of srvSh & " --install", "server", 180)
+		set progress description to ""
+		set progress additional description to ""
+	end if
+
 	-- ── 2  Konflikte ─────────────────────────────────────────────
 	set conflicts to my sh("bash " & quoted form of engine & " conflicts")
 	if conflicts is not "" then
@@ -85,6 +98,7 @@ on run
 	
 	-- ── 3  API-Key ───────────────────────────────────────────────
 	set needKey to true
+	set keySkipped to false
 	try
 		do shell script "bash " & quoted form of engine & " haskey"
 		set m to "Auf diesem Rechner liegt bereits ein Perplexity-Key." & return & return & "Behalten, oder einen neuen eintragen?"
@@ -109,21 +123,58 @@ on run
 			"     Ein einzelner Deep-Research-Call kostet 50 Cent bis 2 Dollar." & return & ¬
 			"     Ohne Limit gibt es keine Obergrenze."
 		activate
-		set b to button returned of (display dialog m with title appTitle buttons {"Abbrechen", "Habe ich schon", "Konsole öffnen"} default button "Konsole öffnen" with icon note)
-		if b is "Abbrechen" then return
-		if b is "Konsole öffnen" then
-			do shell script "open https://www.perplexity.ai/settings/api"
-			delay 1
+		set keyMode to ""
+		repeat
 			activate
-			set m to "Die Konsole ist im Browser offen." & return & return & ¬
-				"Bevor du hier weitergehst:" & return & return & ¬
-				"·   Key erzeugt und kopiert  (API Keys ▸ Generate)" & return & ¬
-				"·   5 Dollar aufgeladen  (Billing ▸ Add credits)" & return & ¬
-				"·   Limit auf 20 Dollar gesetzt  (Billing ▸ Monthly spend limit)"
-			activate
-			display dialog m with title appTitle buttons {"Weiter"} default button "Weiter" with icon note
+			try
+				set b to button returned of (display dialog m with title appTitle buttons {"Ohne Key fortfahren", "Key eintragen", "Konsole öffnen"} default button "Konsole öffnen" with icon note)
+			on error number -128
+				return
+			end try
+
+			if b is "Konsole öffnen" then
+				do shell script "open https://www.perplexity.ai/settings/api"
+				delay 1
+				activate
+				set m to "Die Konsole ist im Browser offen." & return & return & ¬
+					"Erledigt?" & return & return & ¬
+					"·   Key erzeugt und kopiert  (API Keys ▸ Generate)" & return & ¬
+					"·   5 Dollar aufgeladen  (Billing ▸ Add credits)" & return & ¬
+					"·   Limit auf 20 Dollar gesetzt  (Billing ▸ Monthly spend limit)" & return & return & ¬
+					"Dann »Key eintragen«."
+			else if b is "Key eintragen" then
+				set keyMode to "eintragen"
+				exit repeat
+			else
+				-- Ohne Key: was dann nicht geht und wie es nachgeholt wird.
+				activate
+				set warn to "Ohne Key wird das Plugin installiert, aber es kann nicht recherchieren." & return & return & ¬
+					"Was passiert:" & return & ¬
+					"·   Die Recherche-Werkzeuge erscheinen in Claude" & return & ¬
+					"·   Jeder Aufruf bricht mit  401 Unauthorized  ab" & return & ¬
+					"·   Es entstehen keine Kosten" & return & return & ¬
+					"Nachholen jederzeit, ohne den Installer:" & return & ¬
+					"·   In Claude  /perplexity-key  eintippen" & return & ¬
+					"·   Danach  /perplexity-status  zum Prüfen"
+				try
+					if button returned of (display dialog warn with title appTitle buttons {"Zurück", "Ohne Key fortfahren"} default button "Zurück" with icon caution) is "Ohne Key fortfahren" then
+						set keyMode to "ohne"
+						exit repeat
+					end if
+				on error number -128
+					return
+				end try
+			end if
+		end repeat
+
+		if keyMode is "ohne" then
+			set needKey to false
+			set keySkipped to true
 		end if
-		
+	end if
+
+	if needKey then
+
 		set stored to false
 		repeat until stored
 			set theKey to ""
@@ -243,6 +294,18 @@ on run
 	set progress description to ""
 	set progress additional description to ""
 	
+	if keySkipped and wasInstalled then
+		activate
+		set m to "Das Plugin ist installiert, es fehlt nur der Key." & return & return & ¬
+			"So machst du es einsatzbereit:" & return & return & ¬
+			"1   Claude mit Cmd+Q beenden und neu starten" & return & ¬
+			"2   In Claude  /perplexity-key  eintippen" & return & ¬
+			"3   Mit  /perplexity-status  prüfen" & return & return & ¬
+			"Bis dahin melden die Recherche-Werkzeuge  401 Unauthorized.  Es entstehen keine Kosten."
+		display dialog m with title appTitle buttons {"Schließen"} default button "Schließen" with icon caution
+		return
+	end if
+
 	if checkOK and wasInstalled then
 		set m to "Fertig." & return & return & ¬
 			"Claude muss einmal neu starten, damit der Recherche-Server läuft und den Key liest." & return & return & ¬
